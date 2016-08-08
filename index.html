@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Backbone simple example</title>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+	<div>
+		<h1 style="text-align: center">
+			Student Details
+		</h1>
+	</div>
+	<div class="content">
+		<div><label>Search:</label><input type="text" id="serachStud" placeholder="Enter Student Name" />
+		</div>
+		<div id="container">
+		</div>
+		<div><button class="btn btn-primary btn-xs" id="addStudent">Add Student</button></div>
+		<div id="studentForm"></div>	
+	</div>
+	
+	
+	<script type="text/template" id="studTable">
+		<div class="row">
+			<table>
+				<thead>
+					<tr>
+						<th>Roll No</th>
+						<th>Name</th>
+						<th>Update</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% _.each(students,function(stud) { %>
+						<tr><td><%= stud.get('id') %></td>
+							<td><%= stud.get('name') %></td>
+							<td><button class="btn btn-primary  btn-xs" id="editStudent" data-id="<%= stud.get('id')%>">Edit</button>
+								<button class="btn btn-danger  btn-xs" id="deleteStudent" data-id="<%= stud.get('id')%>">Delete</button></td>
+							</tr>
+							<% }); %>
+				</tbody>
+			</table>
+		</div>
+	</script>
+	<script type="text/template" id="studForm">
+		<div id="formField">
+			<% if(stud){ %>
+				<label>Roll No : </label><input id="rollNo" type="text" value= "<%= stud.get('id') %>"/><br />
+				<label>Enter Name : </label><input id="sName" type="text" value = "<%= stud.get('name') %>"><br />
+				<% } else { %>
+					<label>Roll No : </label><input id="rollNo" type="text"/><br />
+					<label>Enter Name : </label><input id="sName" type="text"/><br />
+					<% } %>
+					<button class="btn btn-primary" id="addData">Add</button>
+				</div>
+			</script>
+			<script type="text/javascript" src="js/jquery.js"></script>
+			<script type="text/javascript" src="js/underscore.js"></script>
+			<script type="text/javascript" src="js/backbone.js"></script>
+			<script>
+
+				var studentCollection = Backbone.Collection.extend({
+					model : studModel
+				});
+
+				var studCollection = new studentCollection(); /*create instace of collection*/
+
+				var studModel = Backbone.Model.extend({
+				});
+
+				var stud1 = new studModel({
+					name : "Pooja",
+					id : "23"
+				});
+
+				var stud2 = new studModel({
+					name : "Khushal",
+					id : "09"
+				});
+
+				var stud3 = new studModel({
+					name : "Rahul",
+					id : "25"
+				});
+
+				var stud4 = new studModel({
+					name : "Nikunj",
+					id : "44"
+				});
+
+				studCollection.add(stud1);
+				studCollection.add(stud2);
+				studCollection.add(stud3);
+				studCollection.add(stud4);
+
+		var studentList = Backbone.View.extend({
+			el : '.content',
+
+			events : {
+				'keyup #serachStud' : 'searchStudent',
+				'click #addStudent'	: 'addStudent',
+				'click #editStudent' : 'editStudent',
+				'click #deleteStudent' : 'deleteStudent'
+			},
+
+			render : function(){
+				this.showTable(studCollection.models);
+			},
+
+			searchStudent : function(e){
+				var input = $(e.currentTarget);
+				var inputVal = input.val();
+				var model = _.filter(studCollection.models,function(obj){
+					if(obj.get('name').toLowerCase().match(inputVal.toLowerCase())){
+						return obj;
+					}
+				});
+				this.showTable(model);
+			},
+
+			showTable : function(data){
+				var template = _.template($('#studTable').html(),{students : data});
+				this.$el.find('#container').html(template);	
+			},
+
+			addStudent : function(){
+				studentForm.render();
+				// router.navigate("!/addStudent",{trigger: true , replace : true});
+			},
+
+			editStudent : function(e){
+				var btn = $(e.currentTarget);
+				var modelID = btn.attr('data-id');
+				var model = studCollection.get(modelID);
+				studentForm.render(model);
+
+			},
+
+			deleteStudent : function(e){
+				var btn = $(e.currentTarget);
+				var modelID = btn.attr('data-id');
+				var model = studCollection.get(modelID);
+				studCollection.remove(model);
+				this.showTable(studCollection.models);
+			}
+
+		});
+
+var studForm = Backbone.View.extend({
+	el : '#studentForm',
+
+	events : {
+		'click #addData' : 'addRecords'
+	},
+
+	render : function(data){
+		var template = _.template($('#studForm').html(),{stud : data});
+		this.$el.html(template);
+		this.$el.find('#addData').html( data === undefined ? 'Add' : 'Save');
+	},
+
+	addRecords : function(){
+		var obj = {};
+		obj.id = this.$el.find('#rollNo').val();
+		obj.name = this.$el.find('#sName').val();
+		if(studCollection.get(obj.id)){
+			var model = studCollection.get(obj.id);
+			model.set(obj);	
+		}else{
+			var model = new studModel();
+			model.set(obj);
+			studCollection.add(model);
+		}
+		studentlist.render();
+		this.$el.find('#rollNo').val('');
+		this.$el.find('#sName').val('');
+	}
+});
+
+var studentlist = new studentList(); /*create instance of view*/ 
+var studentForm = new studForm();
+
+var Router = Backbone.Router.extend({
+	routes : {
+		'' : 'home',
+		'!/addStudent' : 'addStudent'
+	}
+});
+
+var router= new Router(); /*create instance of router*/
+
+router.on('route:home',function(){
+	studentlist.render();
+});
+router.on('route:addStudent',function(){
+	studentForm.render();
+});
+Backbone.history.start();
+</script> 
+</body>
+</html>

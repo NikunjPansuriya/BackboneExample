@@ -1,0 +1,11 @@
+.logo {
+	height: 100px;
+}
+
+.row{
+	margin: 0px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
