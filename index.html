@@ -32,6 +32,7 @@
 					</tr>
 				</thead>
 				<tbody>
+				<% if(students.length > 0) { %>
 					<% _.each(students,function(stud) { %>
 						<tr><td><%= stud.get('id') %></td>
 							<td><%= stud.get('name') %></td>
@@ -39,6 +40,10 @@
 								<button class="btn btn-danger  btn-xs" id="deleteStudent" data-id="<%= stud.get('id')%>">Delete</button></td>
 							</tr>
 							<% }); %>
+				<%} else { %>
+				        < tr > < td colspan = "3" > No Records Found!!!! < /td></tr >
+				        <%
+				} %>
 				</tbody>
 			</table>
 		</div>
@@ -126,7 +131,6 @@
 
 			addStudent : function(){
 				studentForm.render();
-				// router.navigate("!/addStudent",{trigger: true , replace : true});
 			},
 
 			editStudent : function(e){
@@ -164,6 +168,10 @@ var studForm = Backbone.View.extend({
 		var obj = {};
 		obj.id = this.$el.find('#rollNo').val();
 		obj.name = this.$el.find('#sName').val();
+		if(obj.id==''||obj.name=='') {
+			this.$el.find('#addData').html('Add');
+			return;
+		}
 		if(studCollection.get(obj.id)){
 			var model = studCollection.get(obj.id);
 			model.set(obj);	
@@ -193,9 +201,7 @@ var router= new Router(); /*create instance of router*/
 router.on('route:home',function(){
 	studentlist.render();
 });
-router.on('route:addStudent',function(){
-	studentForm.render();
-});
+
 Backbone.history.start();
 </script> 
 </body>
